@@ -10,6 +10,28 @@
   </head>
   <script type="module" src="./js/draggable_div.mjs"></script>
   <body>
+    <h1>Draggable div</h1>
+
+    <h2>Basic</h2>
+    <div class="flex-box">
+      <draggable-div class="drag-child" draggable-horizontal>
+        <span>easily set up</span>
+        <span>without any kind</span>
+        <span>of adjustments</span>
+      </draggable-div>
+      <draggable-div class="draggable-no-flex drag-li" draggable="li" into="ul">
+        <p>Shopping list</p>
+        <ul>
+          <li>2 loafs of bread</li>
+          <li>3 jugs of milk</li>
+          <li>2kg bananas</li>
+          <li>2 chocolate spread</li>
+          <li>8 pickles</li>
+        </ul>
+      </draggable-div>
+    </div>
+
+    <h2>Swimlane</h2>
     <draggable-div
       id="drag-div"
       draggable=".draggable"

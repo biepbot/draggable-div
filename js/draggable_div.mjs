@@ -58,7 +58,7 @@ class DraggableDivElement extends HTMLElement {
     if (this.draggable) {
       return this.querySelectorAll(this.draggable);
     } else {
-      return this.children;
+      return Array.from(this.children);
     }
   }
 
