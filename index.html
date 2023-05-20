@@ -71,15 +71,14 @@
       let items = {};
 
       function inputCallback() {
-        let item = input.value.trim();
-        add({ value: item, lane: "TO DO" });
+        let value = input.value.trim();
         input.value = "";
+        if (value in items) return;
+        add({ value, lane: "TO DO" });
         save();
       }
 
       function add(item) {
-        if (item.value in items) return;
-
         const laneWrapper = drag.querySelector(
           `[lane='${item.lane}'] .wrapper`
         );
