@@ -154,15 +154,12 @@ class DraggableDivElement extends HTMLElement {
         dragger.startLocation.top -= evt.pageY;
         dragger.startLocation.left -= evt.pageX;
 
-        const width = draggable.clientWidth;
-        const height = draggable.clientHeight;
-
         // Create copies (of to-move and moving)
         dragger.ghost = me.requestGhostFor(draggable);
         draggable.setAttribute("dragging", "");
         dragger.dragCopy = draggable.cloneNode(true);
-        dragger.dragCopy.style.width = width + "px";
-        dragger.dragCopy.style.height = height + "px";
+        dragger.dragCopy.style.width = rect.width + "px";
+        dragger.dragCopy.style.height = rect.height + "px";
         draggable.after(dragger.dragCopy);
         dragger.dragCopy.style.top =
           dragger.startLocation.top + evt.pageY + "px";
@@ -250,7 +247,6 @@ class DraggableDivElement extends HTMLElement {
 
         me.dragging--;
 
-        // TODO:
         // If order changed, call change event
         me.dispatchEvent(new CustomEvent("change", { detail: draggable }));
       };
