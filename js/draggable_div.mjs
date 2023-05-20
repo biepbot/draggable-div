@@ -7,7 +7,7 @@ function distanceTo(element, x, y, xAxis) {
     y: rect.top + rect.height / 2,
   };
 
-  if (xAxis) return center.x - x;
+  if (xAxis) return x - center.x;
   else return y - center.y;
 }
 
@@ -142,25 +142,28 @@ class DraggableDivElement extends HTMLElement {
       draggable.addEventListener("pointerdown", (evt) => {
         let me = weakThis.deref();
         if (!me) return;
-
+        if (draggable.hasPointerCapture(evt.pointerId)) return;
         if (!Array.from(me.draggables).includes(draggable)) return;
         draggable.setPointerCapture(evt.pointerId);
 
         me.dragging++;
 
-        let rect = draggable.getBoundingClientRect();
+        const rect = draggable.getBoundingClientRect();
         // Preserve dimensions
         dragger.startLocation = { top: rect.top, left: rect.left };
         dragger.startLocation.top -= evt.pageY;
         dragger.startLocation.left -= evt.pageX;
 
+        const width = draggable.clientWidth;
+        const height = draggable.clientHeight;
+
         // Create copies (of to-move and moving)
         dragger.ghost = me.requestGhostFor(draggable);
         draggable.setAttribute("dragging", "");
         dragger.dragCopy = draggable.cloneNode(true);
+        dragger.dragCopy.style.width = width + "px";
+        dragger.dragCopy.style.height = height + "px";
         draggable.after(dragger.dragCopy);
-        dragger.dragCopy.style.width = draggable.clientWidth + "px";
-        dragger.dragCopy.style.height = draggable.clientHeight + "px";
         dragger.dragCopy.style.top =
           dragger.startLocation.top + evt.pageY + "px";
         dragger.dragCopy.style.left =
@@ -193,6 +196,20 @@ class DraggableDivElement extends HTMLElement {
 
         // Check which draggable we are between
         let newDraggable = me.positionToDraggable(lane, evt.pageX, evt.pageY);
+
+        // If this would mean that it would be added to the exact same location, ignore
+        if (newDraggable.element) {
+          if (
+            // If set to before and this space is already occupied by us, then ignore
+            (newDraggable.before &&
+              newDraggable.element.previousSibling === dragger.dragCopy) ||
+            // If set to after and this space is already occupied by us, then ignore
+            (!newDraggable.before &&
+              newDraggable.element.nextSibling === dragger.dragCopy)
+          ) {
+            return;
+          }
+        }
 
         // Move ghost to draggable
         dragger.ghost.remove();
