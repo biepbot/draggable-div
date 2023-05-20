@@ -120,6 +120,12 @@ class DraggableDivElement extends HTMLElement {
     super();
     this._draggableList = [];
     this._detachedList = [];
+
+    // Add a mutation observer to check if children are added
+    this._watcher = new MutationObserver(() => {
+      this._refreshDraggables();
+    });
+    this._watcher.observe(this, { childList: true, subtree: true });
   }
 
   /**
