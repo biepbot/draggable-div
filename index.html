@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link href="css/index.css" rel="stylesheet" />
+  </head>
+  <script type="module" src="./js/draggable_div.mjs"></script>
+  <body>
+    <draggable-div
+      id="drag-div"
+      draggable=".draggable"
+      into=".wrapper"
+      lane-horizontal
+    >
+      <div class="lane" lane="TO DO">
+        <p>TO DO</p>
+        <div class="wrapper">
+          <div class="draggable">Eat bread</div>
+          <div class="draggable">Make bed</div>
+          <div class="draggable">Write code</div>
+          <div class="draggable">Put on clothes</div>
+          <div class="draggable">Fill in hours</div>
+          <div class="draggable">Sleep</div>
+        </div>
+      </div>
+      <div class="lane" lane="PROGRESS">
+        <p>PROGRESS</p>
+        <div class="wrapper"></div>
+      </div>
+      <div class="lane" lane="REVIEW">
+        <p>REVIEW</p>
+        <div class="wrapper"></div>
+      </div>
+      <div class="lane" lane="CLOSED">
+        <p>CLOSED</p>
+        <div class="wrapper"></div>
+      </div>
+    </draggable-div>
+    <script>
+      const drag = document.getElementById("drag-div");
+
+      drag.addEventListener("change", (evt) => {
+        // Changed
+        console.log("changed", evt.detail);
+      });
+      drag.addEventListener("drag", (evt) => {
+        // Drag started on draggable
+        console.log("dragging", evt.detail);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+}
+html {
+  height: 100vh;
+  overflow-y: hidden;
+}
+body {
+  max-width: 800px;
+  margin: auto;
+  padding-top: 1rem;
+}
+draggable-div {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 5px;
+}
+.wrapper {
+  padding: 3px;
+  height: calc(100% - 2.75rem - 1px);
+  border-radius: 4px;
+}
+draggable-div[drag-count] .wrapper {
+  border: 3px dashed rgb(161, 207, 225);
+  background: rgb(233, 245, 251);
+  padding: 0px;
+}
+.lane {
+  flex: 1 1 0px;
+  background: #f4f5f7;
+  padding: 4px;
+  border-radius: 5px;
+}
+.lane p {
+  padding: 1rem;
+  margin: 0;
+  font-size: 0.75rem;
+  display: block;
+  color: #787878;
+  cursor: auto;
+  border-bottom: 1px solid #e4e4e4;
+}
+.lane .draggable {
+  border-radius: 5px;
+  padding: 1rem;
+  background: #fff;
+  border-left: 3px solid rgb(132, 184, 132);
+  cursor: grab;
+  margin: 2px;
+  box-shadow: 0 1px 2px 0 rgba(9, 30, 66, 0.25);
+}
+.lane .draggable[dragging] {
+  cursor: grabbing;
+}
+.lane .ghost {
+  opacity: 0.5;
+  pointer-events: none;
+}
