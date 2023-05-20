@@ -21,7 +21,6 @@ body {
 
 .ghost {
   opacity: 0.5;
-  pointer-events: none;
 }
 
 .drag-child > *,
@@ -105,7 +104,9 @@ draggable-div[drag-count] .wrapper {
   border-radius: 5px;
   padding: 1rem;
   background: #fff;
-  border-left: 3px solid rgb(132, 184, 132);
+  border-left: 5px solid rgb(132, 184, 132);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
   cursor: grab;
   margin: 2px;
   box-shadow: 0 1px 2px 0 rgba(9, 30, 66, 0.25);
@@ -116,13 +117,17 @@ draggable-div[drag-count] .wrapper {
 }
 
 /* Swimline input */
-.lane .delete {
+.draggable .delete {
+  opacity: 0;
+}
+.draggable:hover .delete {
+  opacity: 1;
   cursor: pointer;
-  color: red;
-  font-family: cursive;
+  color: #c96565;
 }
 .lane .text {
   flex-grow: 1;
+  word-break: break-word;
 }
 
 .input {

@@ -138,19 +138,25 @@ class DraggableDivElement extends HTMLElement {
     this.draggables.forEach((draggable) => {
       // Only add listener if not already added
       if (this._draggableList.includes(draggable)) return;
+      if (draggable.hasAttribute("dragging")) return;
       this._draggableList.push(draggable);
 
       // Add event listener on drag
       let dragger = {};
       this._detachedList.push(dragger);
 
+      if (!dragger.dragCopy) {
+        dragger.dragCopy = draggable.cloneNode(true);
+        dragger.dragCopy.setAttribute("dragging", "");
+      }
+
       // On start drag, add a ghost
       draggable.addEventListener("pointerdown", (evt) => {
         let me = weakThis.deref();
         if (!me) return;
-        if (draggable.hasPointerCapture(evt.pointerId)) return;
+        if (dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
         if (!Array.from(me.draggables).includes(draggable)) return;
-        draggable.setPointerCapture(evt.pointerId);
+        me._watcher.disconnect();
 
         me.dragging++;
 
@@ -162,11 +168,10 @@ class DraggableDivElement extends HTMLElement {
 
         // Create copies (of to-move and moving)
         dragger.ghost = me.requestGhostFor(draggable);
-        draggable.setAttribute("dragging", "");
-        dragger.dragCopy = draggable.cloneNode(true);
         dragger.dragCopy.style.width = rect.width + "px";
         dragger.dragCopy.style.height = rect.height + "px";
         draggable.after(dragger.dragCopy);
+        dragger.dragCopy.setPointerCapture(evt.pointerId);
         dragger.dragCopy.style.top =
           dragger.startLocation.top + evt.pageY + "px";
         dragger.dragCopy.style.left =
@@ -176,18 +181,20 @@ class DraggableDivElement extends HTMLElement {
         dragger.dragCopy.style.position = "fixed";
         dragger.dragCopy.style.zIndex = "100";
 
-        // Hide original
-        draggable.style.display = "none";
-        draggable.classList.add("ghost", "ghost-original");
-
         me.dispatchEvent(new CustomEvent("drag", { detail: draggable }));
+
+        me._watcher.observe(me, { childList: true, subtree: true });
+        // Prevent select
+        evt.preventDefault();
+        return false;
       });
 
       // On drag, add ghost inbetween elements (unless one is already present)
-      draggable.addEventListener("pointermove", (evt) => {
+      dragger.dragCopy.addEventListener("pointermove", (evt) => {
         let me = weakThis.deref();
         if (!me) return;
-        if (!draggable.hasPointerCapture(evt.pointerId)) return;
+        if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
+        me._watcher.disconnect();
 
         dragger.dragCopy.style.top =
           dragger.startLocation.top + evt.pageY + "px";
@@ -199,20 +206,6 @@ class DraggableDivElement extends HTMLElement {
 
         // Check which draggable we are between
         let newDraggable = me.positionToDraggable(lane, evt.pageX, evt.pageY);
-
-        // If this would mean that it would be added to the exact same location, ignore
-        if (newDraggable.element) {
-          if (
-            // If set to before and this space is already occupied by us, then ignore
-            (newDraggable.before &&
-              newDraggable.element.previousSibling === dragger.dragCopy) ||
-            // If set to after and this space is already occupied by us, then ignore
-            (!newDraggable.before &&
-              newDraggable.element.nextSibling === dragger.dragCopy)
-          ) {
-            return;
-          }
-        }
 
         // Move ghost to draggable
         dragger.ghost.remove();
@@ -226,38 +219,31 @@ class DraggableDivElement extends HTMLElement {
             newDraggable.element.after(dragger.ghost);
           }
         }
+        me._watcher.observe(me, { childList: true, subtree: true });
       });
 
       // On stop drag, remove ghost, move element
       const dragDone = (evt) => {
         let me = weakThis.deref();
         if (!me) return;
-        if (!draggable.hasPointerCapture(evt.pointerId)) return;
-        draggable.releasePointerCapture(evt.pointerId);
-
-        // Move element to location
-        draggable.remove();
-        dragger.ghost.after(draggable);
+        if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
+        dragger.dragCopy.releasePointerCapture(evt.pointerId);
+        me._watcher.disconnect();
 
         // Clean up ghosts
         dragger.dragCopy.remove();
-        dragger.ghost.remove();
+        me.removeGhostFor(draggable, dragger.ghost);
         delete dragger.ghost;
-        delete dragger.dragCopy;
         delete dragger.startLocation;
-        draggable.removeAttribute("dragging");
-
-        // Reset style
-        draggable.style.display = null;
-        draggable.classList.remove("ghost", "ghost-original");
 
         me.dragging--;
 
         // If order changed, call change event
         me.dispatchEvent(new CustomEvent("change", { detail: draggable }));
+        me._watcher.observe(me, { childList: true, subtree: true });
       };
-      draggable.addEventListener("pointerup", dragDone);
-      draggable.addEventListener("pointercancel", dragDone);
+      dragger.dragCopy.addEventListener("pointerup", dragDone);
+      dragger.dragCopy.addEventListener("pointercancel", dragDone);
     });
   }
 
@@ -286,11 +272,7 @@ class DraggableDivElement extends HTMLElement {
 
     // Filter out ghosts and ghost-original elements
     draggables = Array.from(draggables).filter((ele) => {
-      return !(
-        ele.classList.contains("ghost") ||
-        ele.classList.contains("ghost-original") ||
-        ele.hasAttribute("dragging")
-      );
+      return !ele.hasAttribute("dragging") && !ele.classList.contains("ghost");
     });
     return closestsElementTo(draggables, x, y, this.draggableHorizontal);
   }
@@ -301,10 +283,23 @@ class DraggableDivElement extends HTMLElement {
    * @returns {HTMLElement} Element to placehold the dragged element
    */
   requestGhostFor(ele) {
-    let ghost = ele.cloneNode(true);
-    ghost.classList.add("ghost");
-    ele.after(ghost);
-    return ghost;
+    ele.classList.add("ghost");
+    ele.setAttribute("dragging", "");
+    return ele;
+  }
+
+  /**
+   * Removes a ghost for a dragged element
+   * @param {HTMLElement} ele The dragged element
+   * @param {HTMLElement} ghost The ghost left in the lanes
+   * @returns {HTMLElement} The original element
+   */
+  removeGhostFor(ele, ghost) {
+    ele.classList.remove("ghost");
+    ele.removeAttribute("dragging");
+    ghost.classList.remove("ghost");
+    ghost.removeAttribute("dragging");
+    return ele;
   }
 
   connectedCallback() {
