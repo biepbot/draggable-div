@@ -137,3 +137,7 @@ draggable-div[drag-count] .wrapper {
   height: 1.5rem;
   padding: 3px;
 }
+
+body > p {
+  padding-bottom: 0.75rem;
+}

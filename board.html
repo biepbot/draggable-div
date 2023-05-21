@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/board.css" rel="stylesheet" />
+    <link href="css/context.css" rel="stylesheet" />
+  </head>
+  <script type="module" src="./js/free_draggable_div.mjs"></script>
+  <body>
+    <h1>Board</h1>
+    <free-draggable-div id="board"></free-draggable-div>
+    <div class="flex-box input">
+      <input id="board-task-add" type="text" oninput />
+      <button onclick="boardInputCallback();">Add note</button>
+    </div>
+  </body>
+  <script type="module">
+    import { boardInputCallback } from "./js/examples/board.mjs";
+    self.boardInputCallback = boardInputCallback;
+  </script>
+</html>

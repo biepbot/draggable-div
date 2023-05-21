@@ -7,36 +7,11 @@
       content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <link href="css/index.css" rel="stylesheet" />
-    <link href="css/board.css" rel="stylesheet" />
     <link href="css/context.css" rel="stylesheet" />
   </head>
   <script type="module" src="./js/draggable_div.mjs"></script>
-  <script type="module" src="./js/free_draggable_div.mjs"></script>
   <body>
-    <h1>Draggable div</h1>
-
-    <h2>Basic</h2>
-    <div class="flex-box">
-      <draggable-div class="drag-child" draggable-horizontal>
-        <span>easily set up</span>
-        <span>without any kind</span>
-        <span>of adjustments</span>
-      </draggable-div>
-      <draggable-div class="draggable-no-flex drag-li" draggable="li" into="ul">
-        <p>Shopping list</p>
-        <ul>
-          <li>2 loafs of bread</li>
-          <li>3 jugs of milk</li>
-          <li>2kg bananas</li>
-          <li>2 chocolate spread</li>
-          <li>8 pickles</li>
-        </ul>
-      </draggable-div>
-    </div>
-
     <h2>Swimlane</h2>
-    <p>Also accessible at <a href="swimlane.html">swimlane.html</a>.</p>
-
     <draggable-div
       id="drag-div"
       draggable=".draggable"
@@ -66,20 +41,10 @@
         Add item
       </button>
     </div>
-    <h1>Free draggable div</h1>
-    <h2>Board</h2>
-    <p>Also accessible at <a href="board.html">board.html</a>.</p>
-    <free-draggable-div id="board"></free-draggable-div>
-    <div class="flex-box input">
-      <input id="board-task-add" type="text" oninput />
-      <button onclick="boardInputCallback();">Add note</button>
-    </div>
   </body>
   <script type="module">
     import { swimLaneInputCallback } from "./js/examples/swimlane.mjs";
-    import { boardInputCallback } from "./js/examples/board.mjs";
 
     self.swimLaneInputCallback = swimLaneInputCallback;
-    self.boardInputCallback = boardInputCallback;
   </script>
 </html>
