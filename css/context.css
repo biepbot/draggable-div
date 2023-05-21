@@ -2,6 +2,10 @@
   --context-menu-padding: 0.2rem;
 }
 
+.ghost context-menu {
+  display: none;
+}
+
 context-menu {
   box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
 }
