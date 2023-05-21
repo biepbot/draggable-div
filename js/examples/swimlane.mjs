@@ -1,3 +1,8 @@
+import {
+  ContextMenuBuilder,
+  removeContextMenu,
+} from "../context_menu_builder.mjs";
+
 const drag = document.getElementById("drag-div");
 const input = document.getElementById("task-add");
 input.addEventListener("keydown", function (e) {
@@ -29,21 +34,26 @@ function addSwimLaneItem(item) {
   p.classList.add("text");
   div.appendChild(p);
 
-  // Add delete button
-  const deleteDiv = document.createElement("div");
-  deleteDiv.innerText = "x";
-  deleteDiv.classList.add("delete");
-  deleteDiv.addEventListener("pointerdown", () => {
-    // Remove self
-    div.remove();
+  // Create a context menu to use for deleting the tickets
+  let contextMenu = new ContextMenuBuilder();
+  contextMenu.for = div;
+  contextMenu.builder = [
+    {
+      label: "Delete",
+      alt: "x",
+      clickHandler: () => {
+        // Remove self
+        div.remove();
 
-    // Remove item
-    delete items[item.value];
+        // Remove item
+        delete items[item.value];
+        removeContextMenu(contextMenu);
 
-    // Save
-    saveSwimLane();
-  });
-  div.appendChild(deleteDiv);
+        // Save
+        saveSwimLane();
+      },
+    },
+  ];
 
   laneWrapper.appendChild(div);
 

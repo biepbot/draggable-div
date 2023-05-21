@@ -1,3 +1,9 @@
+import {
+  ContextMenuBuilder,
+  removeContextMenu,
+} from "../context_menu_builder.mjs";
+
+// Set up board
 const boardInput = document.getElementById("board-task-add");
 const board = document.getElementById("board");
 boardInput.addEventListener("keydown", function (e) {
@@ -34,6 +40,28 @@ function addBoardItem(item) {
 
   // Add to items
   boardItems.push(item);
+
+  // Create a context menu to use for deleting the notes
+  let contextMenu = new ContextMenuBuilder();
+  contextMenu.for = note;
+  contextMenu.builder = [
+    {
+      label: "Delete",
+      alt: "x",
+      clickHandler: () => {
+        for (let i = 0; i < boardItems.length; i++) {
+          const item = boardItems[i];
+          if (item.note === note) {
+            boardItems.splice(i, 1);
+            break;
+          }
+        }
+        note.remove();
+        removeContextMenu(contextMenu);
+        saveBoard();
+      },
+    },
+  ];
 }
 
 function saveBoard() {
