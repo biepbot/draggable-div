@@ -119,10 +119,6 @@ draggable-div[drag-count] .wrapper {
 
 /* Swimline input */
 .draggable .delete {
-  opacity: 0;
-}
-.draggable:hover .delete {
-  opacity: 1;
   cursor: pointer;
   color: #c96565;
 }

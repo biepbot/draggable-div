@@ -63,127 +63,19 @@
         Add item
       </button>
     </div>
-    <script>
-      const drag = document.getElementById("drag-div");
-      const input = document.getElementById("task-add");
-      input.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          swimLaneInputCallback();
-        }
-      });
-
-      let items = {};
-
-      function swimLaneInputCallback() {
-        let value = input.value.trim();
-        input.value = "";
-        if (value in items) return;
-        add({ value, lane: "TO DO" });
-        save();
-      }
-
-      function add(item) {
-        const laneWrapper = drag.querySelector(
-          `[lane='${item.lane}'] .wrapper`
-        );
-
-        // <div class="draggable">Eat bread</div>
-        const div = document.createElement("div");
-        div.classList.add("draggable");
-
-        // Add text
-        const p = document.createElement("p");
-        p.innerText = item.value;
-        p.classList.add("text");
-        div.appendChild(p);
-
-        // Add delete button
-        const deleteDiv = document.createElement("div");
-        deleteDiv.innerText = "x";
-        deleteDiv.classList.add("delete");
-        deleteDiv.addEventListener("pointerdown", () => {
-          // Remove self
-          div.remove();
-
-          // Remove item
-          delete items[item.value];
-
-          // Save
-          save();
-        });
-        div.appendChild(deleteDiv);
-
-        laneWrapper.appendChild(div);
-
-        // Add to items
-        items[item.value] = item.lane;
-      }
-
-      function save() {
-        localStorage.setItem("taskList", JSON.stringify(items));
-      }
-
-      function load() {
-        let rawItems = localStorage.getItem("taskList");
-        if (rawItems) {
-          items = JSON.parse(rawItems);
-          for (const item in items) {
-            add({ value: item, lane: items[item] });
-          }
-        }
-      }
-
-      window.addEventListener("load", load);
-      drag.addEventListener("change", (evt) => {
-        const element = evt.detail;
-        let value = element.querySelector("p.text").innerText;
-
-        let newLane = element.parentElement.parentElement.getAttribute("lane");
-        if (!newLane) {
-          console.error("Swimlane structure has changed?");
-          return;
-        }
-
-        items[value] = newLane;
-        save();
-      });
-    </script>
-
+    <h1>Free draggable div</h1>
     <h2>Board</h2>
     <free-draggable-div id="board"></free-draggable-div>
     <div class="flex-box input">
       <input id="board-task-add" type="text" oninput />
       <button onclick="boardInputCallback();">Add note</button>
     </div>
-    <script>
-      const boardInput = document.getElementById("board-task-add");
-      const board = document.getElementById("board");
-      boardInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          boardInputCallback();
-        }
-      });
-
-      function boardInputCallback() {
-        let value = boardInput.value.trim();
-        input.value = "";
-
-        /*
-        <a href="#" contenteditable>
-          <h2>Title #1</h2>
-          <p>Text Content #1</p>
-        </a>  
-        */
-
-        const note = document.createElement("a");
-        note.classList.add("sticky-note");
-        note.href = "#";
-        note.contentEditable = true;
-        const p = document.createElement("p");
-        p.innerText = value;
-        note.appendChild(p);
-        board.appendChild(note);
-      }
-    </script>
   </body>
+  <script type="module">
+    import { swimLaneInputCallback } from "./js/examples/swimlane.mjs";
+    import { boardInputCallback } from "./js/examples/board.mjs";
+
+    self.swimLaneInputCallback = swimLaneInputCallback;
+    self.boardInputCallback = boardInputCallback;
+  </script>
 </html>
