@@ -2,12 +2,11 @@
 const intervalTime = 300;
 
 /// Pixel range before it is not considered the same
-const clickRange = 10;
+const clickRange = 15;
 
 function addDoubleClickListener(element, fn) {
-  let lastClicks = {};
+  let last;
   element.addEventListener("pointerdown", (evt) => {
-    const last = lastClicks[evt.pointerId];
     if (last) {
       // Click of this pointer happened before and hasn't expired
       // Check if distance isn't too far away from last click
@@ -33,9 +32,9 @@ function addDoubleClickListener(element, fn) {
       }
     }
 
-    lastClicks[evt.pointerId] = {
+    last = {
       lastClickTimer: setTimeout(() => {
-        delete lastClicks[evt.pointerId];
+        last = null;
       }, intervalTime),
       evt,
     };
