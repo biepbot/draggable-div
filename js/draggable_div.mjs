@@ -30,6 +30,17 @@ function closestsElementTo(arr, x, y, xAxis) {
   return info;
 }
 
+// Workaround for touch-action: none not always working
+document.addEventListener(
+  "touchmove",
+  (evt) => {
+    if (document.querySelector("*[dragging]")) {
+      evt.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
 /**
  * DraggableDivElement
  * @class
