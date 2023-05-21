@@ -110,6 +110,7 @@ draggable-div[drag-count] .wrapper {
   cursor: grab;
   margin: 2px;
   box-shadow: 0 1px 2px 0 rgba(9, 30, 66, 0.25);
+  position: relative;
 }
 
 .lane .draggable[dragging] {

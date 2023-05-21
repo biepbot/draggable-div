@@ -22,6 +22,7 @@ function swimLaneInputCallback() {
 }
 
 function addSwimLaneItem(item) {
+  let contextMenu = new ContextMenuBuilder();
   const laneWrapper = drag.querySelector(`[lane='${item.lane}'] .wrapper`);
 
   // <div class="draggable">Eat bread</div>
@@ -35,11 +36,26 @@ function addSwimLaneItem(item) {
   div.appendChild(p);
 
   // Create a context menu to use for deleting the tickets
-  let contextMenu = new ContextMenuBuilder();
+  div.addEventListener("pointerdown", (evt) => {
+    if (!contextMenu.isConnected && !evt.composedPath().includes(contextMenu)) {
+      // Not clicking on context menu, so display context menu
+      contextMenu._contextMenu(evt);
+    }
+  });
+  contextMenu.addEventListener("contextmenu-init", (evt) => {
+    const menu = evt.detail;
+    // Move menu to inside element
+    menu.remove();
+    div.appendChild(menu);
+    // Revert all the styling
+    menu.style.position = null;
+    menu.style.top = null;
+    menu.style.left = null;
+  });
   contextMenu.for = div;
   contextMenu.builder = [
     {
-      label: "Delete",
+      label: "delete",
       alt: "x",
       clickHandler: () => {
         // Remove self

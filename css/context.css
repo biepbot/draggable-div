@@ -6,15 +6,12 @@
   display: none;
 }
 
-context-menu {
-  box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
-}
-
 context-menu .item {
   background: #fff;
   padding: 3px;
   display: flex;
   min-width: 8rem;
+  width: 100%;
   color: #000;
   border: none;
 }
@@ -67,4 +64,24 @@ context-menu .with-submenu:hover {
 context-menu .text-label {
   padding-left: var(--context-menu-padding);
   padding-right: var(--context-menu-padding);
+}
+
+/* To create small context menus that fit the swimlane / board */
+context-menu {
+  position: absolute;
+  z-index: 300;
+  top: 0px;
+  right: calc(-1.4rem - 5px);
+  width: 1.4rem;
+  overflow-x: hidden;
+  border-radius: 3px;
+  box-shadow: 0px 0px 1px rgba(33, 33, 33, 0.7);
+}
+
+.draggable context-menu {
+  top: initial;
+  bottom: -1.75rem;
+  left: 0;
+  right: 0;
+  width: initial;
 }

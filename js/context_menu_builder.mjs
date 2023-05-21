@@ -32,7 +32,7 @@ function removeContextMenu(menu) {
 }
 
 window.addEventListener("pointerdown", cleanUp, true);
-window.addEventListener("blur", cleanUp);
+//window.addEventListener("blur", cleanUp);
 window.addEventListener("contextmenu", cleanUp);
 
 /**
