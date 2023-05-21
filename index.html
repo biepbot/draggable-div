@@ -7,8 +7,10 @@
       content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <link href="css/index.css" rel="stylesheet" />
+    <link href="css/board.css" rel="stylesheet" />
   </head>
   <script type="module" src="./js/draggable_div.mjs"></script>
+  <script type="module" src="./js/free_draggable_div.mjs"></script>
   <body>
     <h1>Draggable div</h1>
 
@@ -57,20 +59,22 @@
     </draggable-div>
     <div class="flex-box input">
       <input id="task-add" type="text" oninput />
-      <button id="task-add-button" onclick="inputCallback();">Add item</button>
+      <button id="task-add-button" onclick="swimLaneInputCallback();">
+        Add item
+      </button>
     </div>
     <script>
       const drag = document.getElementById("drag-div");
       const input = document.getElementById("task-add");
       input.addEventListener("keydown", function (e) {
-        if (e.code === "Enter") {
-          inputCallback();
+        if (e.key === "Enter") {
+          swimLaneInputCallback();
         }
       });
 
       let items = {};
 
-      function inputCallback() {
+      function swimLaneInputCallback() {
         let value = input.value.trim();
         input.value = "";
         if (value in items) return;
@@ -143,6 +147,43 @@
         items[value] = newLane;
         save();
       });
+    </script>
+
+    <h2>Board</h2>
+    <free-draggable-div id="board"></free-draggable-div>
+    <div class="flex-box input">
+      <input id="board-task-add" type="text" oninput />
+      <button onclick="boardInputCallback();">Add note</button>
+    </div>
+    <script>
+      const boardInput = document.getElementById("board-task-add");
+      const board = document.getElementById("board");
+      boardInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          boardInputCallback();
+        }
+      });
+
+      function boardInputCallback() {
+        let value = boardInput.value.trim();
+        input.value = "";
+
+        /*
+        <a href="#" contenteditable>
+          <h2>Title #1</h2>
+          <p>Text Content #1</p>
+        </a>  
+        */
+
+        const note = document.createElement("a");
+        note.classList.add("sticky-note");
+        note.href = "#";
+        note.contentEditable = true;
+        const p = document.createElement("p");
+        p.innerText = value;
+        note.appendChild(p);
+        board.appendChild(note);
+      }
     </script>
   </body>
 </html>
