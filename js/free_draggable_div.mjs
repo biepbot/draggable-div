@@ -6,10 +6,19 @@ class FreeDraggableDivElement extends DraggableDivElement {
   }
 
   updatePosition(dragger, x, y) {
-    // Check if position would be out of bounds of lane given
+    // TODO:
+    // Check if position would be out of bounds of lane given, then clamp
 
-    dragger.dragCopy.style.top = dragger.startLocation.top + y + "px";
-    dragger.dragCopy.style.left = dragger.startLocation.left + x + "px";
+    super.updatePosition(dragger, x, y);
+  }
+
+  removeGhostFor(ele, dragger) {
+    // take over position of dragger.dragCopy
+    const drag = dragger.dragCopy;
+    ele.style.top = drag.style.top;
+    ele.style.left = drag.style.left;
+
+    return super.removeGhostFor(ele, dragger);
   }
 }
 
