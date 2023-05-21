@@ -68,3 +68,4 @@ class FreeDraggableDivElement extends DraggableDivElement {
 }
 
 customElements.define("free-draggable-div", FreeDraggableDivElement);
+export { clamp, FreeDraggableDivElement };

@@ -2,10 +2,35 @@ import {
   ContextMenuBuilder,
   removeContextMenu,
 } from "../context_menu_builder.mjs";
+import { addDoubleClickListener } from "../dblclick/double_click.mjs";
+import { clamp } from "../free_draggable_div.mjs";
+
+import { dot } from "../debug/dot.mjs";
 
 // Set up board
 const boardInput = document.getElementById("board-task-add");
 const board = document.getElementById("board");
+
+addDoubleClickListener(board, (evt) => {
+  const rect = board.getBoundingClientRect();
+  const x = evt.clientX - rect.left;
+  const y = evt.clientY - rect.top;
+
+  let item = { value: "", x, y };
+  const note = addBoardItem(item);
+
+  // Move item to be centered to mouse
+  const noteRect = note.getBoundingClientRect();
+  item.x -= noteRect.width / 2;
+  item.y -= noteRect.height / 2;
+
+  item.x = clamp(item.x, 0, rect.width - noteRect.width);
+  item.y = clamp(item.y, 0, rect.height - noteRect.height);
+  note.style.left = `${item.x}px`;
+  note.style.top = `${item.y}px`;
+  saveBoard();
+});
+
 boardInput.addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
     boardInputCallback();
@@ -80,6 +105,8 @@ function addBoardItem(item) {
       },
     },
   ];
+
+  return note;
 }
 
 function saveBoard() {
