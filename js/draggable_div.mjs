@@ -199,6 +199,9 @@ class DraggableDivElement extends HTMLElement {
         if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
         me._watcher.disconnect();
 
+        // Mark original element as busy dragging
+        draggable.setAttribute("dragging", "");
+
         me.updatePosition(dragger, evt);
         me._watcher.observe(me, { childList: true, subtree: true });
 
@@ -225,8 +228,6 @@ class DraggableDivElement extends HTMLElement {
         // If order changed, call change event
         me.dispatchEvent(new CustomEvent("change", { detail: draggable }));
         me._watcher.observe(me, { childList: true, subtree: true });
-
-        console.log(evt);
       };
       dragger.dragCopy.addEventListener("pointerup", dragDone);
       dragger.dragCopy.addEventListener("pointercancel", dragDone);
@@ -304,7 +305,6 @@ class DraggableDivElement extends HTMLElement {
    */
   requestGhostFor(ele) {
     ele.classList.add("ghost");
-    ele.setAttribute("dragging", "");
     return ele;
   }
 

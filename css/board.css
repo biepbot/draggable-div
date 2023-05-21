@@ -20,7 +20,7 @@
   box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
 }
 
-#board .ghost {
+#board .ghost[dragging] {
   display: none;
 }
 
