@@ -69,7 +69,6 @@ draggable-div {
   width: 100%;
   height: 60%;
   gap: 5px;
-  touch-action: none;
 }
 .draggable-no-flex {
   display: block;
@@ -118,14 +117,6 @@ draggable-div[drag-count] .wrapper {
 }
 
 /* Swimline input */
-.draggable .delete {
-  opacity: 0;
-}
-.draggable:hover .delete {
-  opacity: 1;
-  cursor: pointer;
-  color: #c96565;
-}
 .lane .text {
   flex-grow: 1;
   word-break: break-word;

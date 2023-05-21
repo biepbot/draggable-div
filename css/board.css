@@ -1,0 +1,33 @@
+#board {
+  height: 600px;
+  width: 100%;
+  display: block;
+  border: 1px solid #eee;
+  background: #fafafa;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+#board p {
+  text-decoration: none;
+  color: #000;
+  background: #ffc;
+  display: block;
+  height: 8em;
+  width: 8em;
+  font-size: 0.75rem;
+  padding: 1em;
+  box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
+}
+
+#board .ghost[dragging] {
+  display: none;
+}
+
+#board p[dragging] {
+  cursor: grabbing;
+}
+
+#board p {
+  position: absolute;
+}

@@ -11,3 +11,7 @@ Embed the script in your page as a module:
 ```
 
 This will register itself in the custom component registy, meaning you can then on your page refer to the new tag name `draggable-div`
+
+### How does it work?
+
+Positioning relies purely on CSS rules. Setting positioning might conflict.

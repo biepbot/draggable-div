@@ -30,6 +30,17 @@ function closestsElementTo(arr, x, y, xAxis) {
   return info;
 }
 
+// Workaround for touch-action: none not always working
+document.addEventListener(
+  "touchmove",
+  (evt) => {
+    if (document.querySelector("*[dragging]")) {
+      evt.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
 /**
  * DraggableDivElement
  * @class
@@ -135,6 +146,11 @@ class DraggableDivElement extends HTMLElement {
   _refreshDraggables() {
     let weakThis = new WeakRef(this);
 
+    // Update all lanes to be position relative
+    this.lanes.forEach((lane) => {
+      lane.style.position = "relative";
+    });
+
     this.draggables.forEach((draggable) => {
       // Only add listener if not already added
       if (this._draggableList.includes(draggable)) return;
@@ -162,31 +178,29 @@ class DraggableDivElement extends HTMLElement {
 
         const rect = draggable.getBoundingClientRect();
         // Preserve dimensions
-        dragger.startLocation = { top: rect.top, left: rect.left };
-        dragger.startLocation.top -= evt.pageY;
-        dragger.startLocation.left -= evt.pageX;
+        dragger.startLocation = {
+          top: draggable.offsetTop,
+          left: draggable.offsetLeft,
+          clientTop: rect.top,
+          clientLeft: rect.left,
+          mouseOffsetX: rect.left - evt.clientX,
+          mouseOffsetY: rect.top - evt.clientY,
+        };
 
         // Create copies (of to-move and moving)
-        dragger.ghost = me.requestGhostFor(draggable);
+        dragger.ghost = me.requestGhostFor(draggable, dragger);
         dragger.dragCopy.style.width = rect.width + "px";
         dragger.dragCopy.style.height = rect.height + "px";
         draggable.after(dragger.dragCopy);
         dragger.dragCopy.setPointerCapture(evt.pointerId);
-        dragger.dragCopy.style.top =
-          dragger.startLocation.top + evt.pageY + "px";
-        dragger.dragCopy.style.left =
-          dragger.startLocation.left + evt.pageX + "px";
+
+        me.updatePosition(dragger, evt);
 
         // Make our element float to cursor
-        dragger.dragCopy.style.position = "fixed";
-        dragger.dragCopy.style.zIndex = "100";
-
+        me.setDraggableStyling(dragger);
         me.dispatchEvent(new CustomEvent("drag", { detail: draggable }));
 
         me._watcher.observe(me, { childList: true, subtree: true });
-        // Prevent select
-        evt.preventDefault();
-        return false;
       });
 
       // On drag, add ghost inbetween elements (unless one is already present)
@@ -196,30 +210,15 @@ class DraggableDivElement extends HTMLElement {
         if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
         me._watcher.disconnect();
 
-        dragger.dragCopy.style.top =
-          dragger.startLocation.top + evt.pageY + "px";
-        dragger.dragCopy.style.left =
-          dragger.startLocation.left + evt.pageX + "px";
+        // Mark original element as busy dragging
+        draggable.setAttribute("dragging", "");
 
-        // Check which lane we have moved to
-        let lane = me.positionToLane(evt.pageX, evt.pageY).element;
-
-        // Check which draggable we are between
-        let newDraggable = me.positionToDraggable(lane, evt.pageX, evt.pageY);
-
-        // Move ghost to draggable
-        dragger.ghost.remove();
-        if (!newDraggable.element) {
-          // First element into lane
-          lane.appendChild(dragger.ghost);
-        } else {
-          if (newDraggable.before) {
-            newDraggable.element.before(dragger.ghost);
-          } else {
-            newDraggable.element.after(dragger.ghost);
-          }
-        }
+        me.updatePosition(dragger, evt);
         me._watcher.observe(me, { childList: true, subtree: true });
+
+        // Prevent select
+        evt.preventDefault();
+        return false;
       });
 
       // On stop drag, remove ghost, move element
@@ -230,10 +229,9 @@ class DraggableDivElement extends HTMLElement {
         dragger.dragCopy.releasePointerCapture(evt.pointerId);
         me._watcher.disconnect();
 
-        // Clean up ghosts
+        // Clean up ghosts / copies
         dragger.dragCopy.remove();
-        me.removeGhostFor(draggable, dragger.ghost);
-        delete dragger.ghost;
+        me.removeGhostFor(draggable, dragger);
         delete dragger.startLocation;
 
         me.dragging--;
@@ -248,23 +246,28 @@ class DraggableDivElement extends HTMLElement {
   }
 
   /**
-   * Function to determine which lane is closest to element being dragged
-   * @param {number} x page x mouse coordinate
-   * @param {number} y page y mouse coordinate
-   * @returns {{element: HTMLElement?, distance: number, before: boolean?}}
+   * Call to request the position of a dragger
+   * @param {*} dragger Dragger containing information of copies, ghosts, start location
+   * @param {PointerEvent} evt the original event
    */
-  positionToLane(x, y) {
-    return closestsElementTo(this.lanes, x, y, this.laneHorizontal);
-  }
+  updatePosition(dragger, evt) {
+    const rect = dragger.startLocation;
+    const offsetX = evt.clientX - rect.clientLeft;
+    const offsetY = evt.clientY - rect.clientTop;
 
-  /**
-   * Function to determine in which lane the closest draggable is found
-   * @param {HTMLElement} lane The lane of the element
-   * @param {number} x page x mouse coordinate
-   * @param {number} y page y mouse coordinate
-   * @returns {{element: HTMLElement?, distance: number, before: boolean?}}
-   */
-  positionToDraggable(lane, x, y) {
+    dragger.dragCopy.style.top = rect.top + offsetY + rect.mouseOffsetY + "px";
+    dragger.dragCopy.style.left =
+      rect.left + offsetX + rect.mouseOffsetX + "px";
+
+    // Check which lane we have moved to
+    let lane = closestsElementTo(
+      this.lanes,
+      evt.clientX,
+      evt.clientY,
+      this.laneHorizontal
+    ).element;
+
+    // Check which draggable we are between
     let draggables = [];
 
     if (this.draggable) draggables = lane.querySelectorAll(this.draggable);
@@ -274,17 +277,50 @@ class DraggableDivElement extends HTMLElement {
     draggables = Array.from(draggables).filter((ele) => {
       return !ele.hasAttribute("dragging") && !ele.classList.contains("ghost");
     });
-    return closestsElementTo(draggables, x, y, this.draggableHorizontal);
+    let newDraggable = closestsElementTo(
+      draggables,
+      evt.clientX,
+      evt.clientY,
+      this.draggableHorizontal
+    );
+
+    // Move ghost to draggable
+    dragger.ghost.remove();
+    if (!newDraggable.element) {
+      // First element into lane
+      lane.appendChild(dragger.ghost);
+    } else {
+      if (newDraggable.before) {
+        newDraggable.element.before(dragger.ghost);
+      } else {
+        newDraggable.element.after(dragger.ghost);
+      }
+    }
+  }
+
+  /**
+   * Sets the further styling for a dragger (position, zIndex, etc)
+   * @param {*} dragger Dragger containing information of copies, ghosts, start location
+   */
+  setDraggableStyling(dragger) {
+    // Rely on CSS styling for positioning
+    const drag = dragger.dragCopy;
+    drag.style.position = "absolute";
+    drag.style.zIndex = "100";
   }
 
   /**
    * Requests a ghost for the element that is being dragged
    * @param {HTMLElement} ele Element being dragged
+   * @param {*} dragger Dragger containing information of copies, ghosts, start location
    * @returns {HTMLElement} Element to placehold the dragged element
    */
-  requestGhostFor(ele) {
+  requestGhostFor(ele, dragger) {
     ele.classList.add("ghost");
-    ele.setAttribute("dragging", "");
+
+    // update drag copy
+    dragger.dragCopy.innerHTML = ele.cloneNode(true).innerHTML;
+
     return ele;
   }
 
@@ -294,11 +330,12 @@ class DraggableDivElement extends HTMLElement {
    * @param {HTMLElement} ghost The ghost left in the lanes
    * @returns {HTMLElement} The original element
    */
-  removeGhostFor(ele, ghost) {
+  removeGhostFor(ele, dragger) {
     ele.classList.remove("ghost");
     ele.removeAttribute("dragging");
-    ghost.classList.remove("ghost");
-    ghost.removeAttribute("dragging");
+    dragger.ghost.classList.remove("ghost");
+    dragger.ghost.removeAttribute("dragging");
+    delete dragger.ghost;
     return ele;
   }
 
@@ -318,3 +355,4 @@ class DraggableDivElement extends HTMLElement {
 }
 
 customElements.define("draggable-div", DraggableDivElement);
+export { DraggableDivElement };

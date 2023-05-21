@@ -1,0 +1,62 @@
+:root {
+  --context-menu-padding: 0.2rem;
+}
+
+context-menu .item {
+  background: #fff;
+  padding: 3px;
+  display: flex;
+  min-width: 8rem;
+  color: #000;
+  border: none;
+}
+
+context-menu .item[disabled] > img,
+context-menu .item[disabled] > span {
+  opacity: 0.5;
+}
+context-menu .divider {
+  border-bottom: 1px solid #ddd;
+}
+
+context-menu .item[clickable]:focus,
+context-menu .item[clickable]:hover {
+  background: #ddd;
+  cursor: pointer;
+}
+
+context-menu span,
+context-menu img {
+  height: 1rem;
+  line-height: 1rem;
+}
+context-menu .alt-label,
+context-menu img {
+  width: 1rem;
+  line-height: 1rem;
+  color: #c96565;
+}
+
+/* border radius*/
+context-menu .item.selected:first-child:before,
+context-menu .item:first-child {
+  border-top-right-radius: var(--context-menu-padding);
+  border-top-left-radius: var(--context-menu-padding);
+}
+context-menu .item.selected:last-child:before,
+context-menu .item:last-child {
+  border-bottom-right-radius: var(--context-menu-padding);
+  border-bottom-left-radius: var(--context-menu-padding);
+}
+context-menu .with-submenu:focus .item:first-child,
+context-menu .with-submenu:hover .item:first-child {
+  border-top-left-radius: 0;
+}
+context-menu .with-submenu:focus,
+context-menu .with-submenu:hover {
+  border-bottom-right-radius: 0;
+}
+context-menu .text-label {
+  padding-left: var(--context-menu-padding);
+  padding-right: var(--context-menu-padding);
+}
