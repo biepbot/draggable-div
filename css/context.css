@@ -2,6 +2,10 @@
   --context-menu-padding: 0.2rem;
 }
 
+context-menu {
+  box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
+}
+
 context-menu .item {
   background: #fff;
   padding: 3px;

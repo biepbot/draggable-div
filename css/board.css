@@ -8,7 +8,7 @@
   padding: 1rem;
 }
 
-#board p {
+#board div {
   text-decoration: none;
   color: #000;
   background: #ffc;
@@ -17,17 +17,38 @@
   width: 8em;
   font-size: 0.75rem;
   padding: 1em;
-  box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.7);
+  box-shadow: 1px 1px 3px rgba(33, 33, 33, 0.3);
 }
 
 #board .ghost[dragging] {
   display: none;
 }
 
-#board p[dragging] {
+#board div[dragging] {
   cursor: grabbing;
 }
 
-#board p {
+#board div {
   position: absolute;
+}
+
+#board p {
+  width: 100%;
+  height: 100%;
+  word-wrap: break-word;
+}
+
+[contenteditable] {
+  outline: none;
+}
+
+#board context-menu {
+  position: absolute;
+  z-index: 300;
+  top: 0px;
+  right: calc(-1.4rem - 5px);
+  width: 1.4rem;
+  overflow-x: hidden;
+  border-radius: 3px;
+  box-shadow: 0px 0px 1px rgba(33, 33, 33, 0.7);
 }

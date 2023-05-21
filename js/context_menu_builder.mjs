@@ -50,6 +50,7 @@ class ContextMenuBuilder extends HTMLElement {
   set for(val) {
     val.addEventListener("contextmenu", (evt) => {
       this._contextMenu(evt);
+      evt.preventDefault();
     });
   }
   get for() {
@@ -103,8 +104,9 @@ class ContextMenuBuilder extends HTMLElement {
     this.style.top = `${evt.clientY}px`;
     this.style.left = `${evt.clientX}px`;
 
-    evt.preventDefault();
     evt.source = this;
+
+    this.dispatchEvent(new CustomEvent("contextmenu-init", { detail: this }));
   }
 
   _build(ptr = this.builder, parent = this) {
@@ -124,10 +126,12 @@ class ContextMenuBuilder extends HTMLElement {
       }
 
       // Create the label
-      let label = document.createElement("span");
-      label.classList.add("text-label");
-      label.innerText = entry.label;
-      container.appendChild(label);
+      if ("label" in entry) {
+        let label = document.createElement("span");
+        label.classList.add("text-label");
+        label.innerText = entry.label;
+        container.appendChild(label);
+      }
 
       let active = true;
       if (entry.active !== undefined) {
@@ -145,19 +149,17 @@ class ContextMenuBuilder extends HTMLElement {
       if (entry.clickHandler && active) {
         if (typeof entry.clickHandler === "string") {
           // Fire event
-          container.addEventListener("click", (evt) => {
+          container.addEventListener("pointerdown", (evt) => {
             this.dispatchEvent(
               new CustomEvent(entry.clickHandler, { bubbles: true })
             );
             this.remove();
-            evt.preventDefault();
           });
         } else {
           // Fire function
-          container.addEventListener("click", (evt) => {
-            entry.clickHandler();
+          container.addEventListener("pointerdown", (evt) => {
+            entry.clickHandler(evt);
             this.remove();
-            evt.preventDefault();
           });
         }
       }

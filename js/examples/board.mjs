@@ -22,19 +22,29 @@ function boardInputCallback() {
 }
 
 function addBoardItem(item) {
-  const note = document.createElement("p");
+  let contextMenu = new ContextMenuBuilder();
+  const note = document.createElement("div");
   note.classList.add("sticky-note");
   note.style.top = `${item.y}px`;
   note.style.left = `${item.x}px`;
-  note.contentEditable = true;
-  note.innerText = item.value;
+  const p = document.createElement("p");
+  p.contentEditable = true;
+  p.innerText = item.value || "";
 
   note.addEventListener("input", () => {
     // Update to new
-    item.value = note.innerText || "";
+    item.value = p.innerText || "";
     saveBoard();
   });
 
+  note.addEventListener("pointerdown", (evt) => {
+    if (!contextMenu.isConnected && !evt.composedPath().includes(contextMenu)) {
+      // Not clicking on context menu, so display context menu
+      contextMenu._contextMenu(evt);
+    }
+  });
+
+  note.appendChild(p);
   board.appendChild(note);
   item.note = note;
 
@@ -42,11 +52,19 @@ function addBoardItem(item) {
   boardItems.push(item);
 
   // Create a context menu to use for deleting the notes
-  let contextMenu = new ContextMenuBuilder();
+  contextMenu.addEventListener("contextmenu-init", (evt) => {
+    const menu = evt.detail;
+    // Move menu to inside element
+    menu.remove();
+    note.appendChild(menu);
+    // Revert all the styling
+    menu.style.position = null;
+    menu.style.top = null;
+    menu.style.left = null;
+  });
   contextMenu.for = note;
   contextMenu.builder = [
     {
-      label: "Delete",
       alt: "x",
       clickHandler: () => {
         for (let i = 0; i < boardItems.length; i++) {
