@@ -177,7 +177,7 @@ class DraggableDivElement extends HTMLElement {
         };
 
         // Create copies (of to-move and moving)
-        dragger.ghost = me.requestGhostFor(draggable);
+        dragger.ghost = me.requestGhostFor(draggable, dragger);
         dragger.dragCopy.style.width = rect.width + "px";
         dragger.dragCopy.style.height = rect.height + "px";
         draggable.after(dragger.dragCopy);
@@ -301,10 +301,15 @@ class DraggableDivElement extends HTMLElement {
   /**
    * Requests a ghost for the element that is being dragged
    * @param {HTMLElement} ele Element being dragged
+   * @param {*} dragger Dragger containing information of copies, ghosts, start location
    * @returns {HTMLElement} Element to placehold the dragged element
    */
-  requestGhostFor(ele) {
+  requestGhostFor(ele, dragger) {
     ele.classList.add("ghost");
+
+    // update drag copy
+    dragger.dragCopy.innerHTML = ele.cloneNode(true).innerHTML;
+
     return ele;
   }
 
