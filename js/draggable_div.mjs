@@ -173,32 +173,28 @@ class DraggableDivElement extends HTMLElement {
         if (dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
         if (!Array.from(me.draggables).includes(draggable)) return;
         me._watcher.disconnect();
-
         me.dragging++;
 
-        const rect = draggable.getBoundingClientRect();
-        // Preserve dimensions
-        dragger.startLocation = {
-          top: draggable.offsetTop,
-          left: draggable.offsetLeft,
-          clientTop: rect.top,
-          clientLeft: rect.left,
-          mouseOffsetX: rect.left - evt.clientX,
-          mouseOffsetY: rect.top - evt.clientY,
-        };
+        // If going from 0 pointers to 1 pointer
+        // then we want to set up for dragging
+        if (me.dragging === 1) {
+          dragger.pointerDown = true;
 
-        // Create copies (of to-move and moving)
-        dragger.ghost = me.requestGhostFor(draggable, dragger);
-        dragger.dragCopy.style.width = rect.width + "px";
-        dragger.dragCopy.style.height = rect.height + "px";
-        draggable.after(dragger.dragCopy);
-        dragger.dragCopy.setPointerCapture(evt.pointerId);
+          const rect = draggable.getBoundingClientRect();
+          // Preserve dimensions
+          dragger.startLocation = {
+            top: draggable.offsetTop,
+            left: draggable.offsetLeft,
+            clientTop: rect.top,
+            clientLeft: rect.left,
+            mouseOffsetX: rect.left - evt.clientX,
+            mouseOffsetY: rect.top - evt.clientY,
+          };
 
-        me.updatePosition(dragger, evt);
-
-        // Make our element float to cursor
-        me.setDraggableStyling(dragger);
-        me.dispatchEvent(new CustomEvent("drag", { detail: draggable }));
+          dragger.dragCopy.style.display = "none";
+          draggable.after(dragger.dragCopy);
+          dragger.dragCopy.setPointerCapture(evt.pointerId);
+        }
 
         me._watcher.observe(me, { childList: true, subtree: true });
       });
@@ -207,12 +203,32 @@ class DraggableDivElement extends HTMLElement {
       dragger.dragCopy.addEventListener("pointermove", (evt) => {
         let me = weakThis.deref();
         if (!me) return;
-        if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
         me._watcher.disconnect();
+
+        // First move after pointer down
+        if (dragger.pointerDown && !dragger.pointerDownHandled) {
+          if (!Array.from(me.draggables).includes(draggable)) return;
+
+          // Create copies (of to-move and moving)
+          dragger.ghost = me.requestGhostFor(draggable, dragger);
+
+          // Set up drag copy properly
+          // Make visible with correct sizes
+          const rect = draggable.getBoundingClientRect();
+          dragger.dragCopy.style.display = null;
+          dragger.dragCopy.style.width = rect.width + "px";
+          dragger.dragCopy.style.height = rect.height + "px";
+
+          me.setDraggableStyling(dragger);
+          me.dispatchEvent(new CustomEvent("drag", { detail: draggable }));
+          dragger.pointerDownHandled = true;
+        }
+        if (!dragger.dragCopy.hasPointerCapture(evt.pointerId)) return;
 
         // Mark original element as busy dragging
         draggable.setAttribute("dragging", "");
 
+        // Make our element float to cursor
         me.updatePosition(dragger, evt);
         me._watcher.observe(me, { childList: true, subtree: true });
 
@@ -235,6 +251,11 @@ class DraggableDivElement extends HTMLElement {
         delete dragger.startLocation;
 
         me.dragging--;
+
+        if (me.dragging === 0) {
+          delete dragger.pointerDown;
+          delete dragger.pointerDownHandled;
+        }
 
         // If order changed, call change event
         me.dispatchEvent(new CustomEvent("change", { detail: draggable }));
@@ -333,8 +354,11 @@ class DraggableDivElement extends HTMLElement {
   removeGhostFor(ele, dragger) {
     ele.classList.remove("ghost");
     ele.removeAttribute("dragging");
-    dragger.ghost.classList.remove("ghost");
-    dragger.ghost.removeAttribute("dragging");
+    if (dragger.ghost) {
+      // Single taps do not create ghosts
+      dragger.ghost.classList.remove("ghost");
+      dragger.ghost.removeAttribute("dragging");
+    }
     delete dragger.ghost;
     return ele;
   }
