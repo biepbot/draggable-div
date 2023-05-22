@@ -158,7 +158,9 @@ class DraggableDivElement extends HTMLElement {
       this._draggableList.push(draggable);
 
       // Add event listener on drag
-      let dragger = {};
+      let dragger = {
+        dragging: 0,
+      };
       this._detachedList.push(dragger);
 
       if (!dragger.dragCopy) {
@@ -174,10 +176,11 @@ class DraggableDivElement extends HTMLElement {
         if (!Array.from(me.draggables).includes(draggable)) return;
         me._watcher.disconnect();
         me.dragging++;
+        dragger.dragging++;
 
         // If going from 0 pointers to 1 pointer
         // then we want to set up for dragging
-        if (me.dragging === 1) {
+        if (dragger.dragging === 1) {
           dragger.pointerDown = true;
 
           const rect = draggable.getBoundingClientRect();
@@ -251,8 +254,9 @@ class DraggableDivElement extends HTMLElement {
         delete dragger.startLocation;
 
         me.dragging--;
+        dragger.dragging--;
 
-        if (me.dragging === 0) {
+        if (dragger.dragging === 0) {
           delete dragger.pointerDown;
           delete dragger.pointerDownHandled;
         }
