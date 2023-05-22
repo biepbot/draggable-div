@@ -48,7 +48,7 @@ document.addEventListener(
  */
 class DraggableDivElement extends HTMLElement {
   static get observedAttributes() {
-    return ["draggable"];
+    return ["draggable", "into"];
   }
 
   /**
@@ -348,6 +348,7 @@ class DraggableDivElement extends HTMLElement {
 
     switch (name) {
       case "draggable":
+      case "into":
         this._refreshDraggables();
         break;
     }
