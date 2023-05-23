@@ -5,8 +5,6 @@ import {
 import { addDoubleClickListener } from "../dblclick/double_click.mjs";
 import { clamp } from "../free_draggable_div.mjs";
 
-import { dot } from "../debug/dot.mjs";
-
 // Set up board
 const boardInput = document.getElementById("board-task-add");
 const board = document.getElementById("board");

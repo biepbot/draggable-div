@@ -371,7 +371,7 @@ class DraggableDivElement extends HTMLElement {
     this._refreshDraggables();
   }
 
-  attributeCallback(name, oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
 
     switch (name) {
