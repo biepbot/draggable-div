@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link href="css/retroboard.css" rel="stylesheet" />
+    <link href="css/context.css" rel="stylesheet" />
+  </head>
+  <script type="module" src="./js/retroboard/hover-div.mjs"></script>
+  <script type="module" src="./js/retroboard/retroboard.mjs"></script>
+  <body>
+    <retro-board>
+      <div class="holder">
+        <hover-div class="box" color="#c9ebb9" top="-510" left="-710">
+          <p>Good</p>
+        </hover-div>
+        <hover-div class="box" color="#ffcdbc" top="-510" left="110">
+          <p>Bad</p>
+        </hover-div>
+        <hover-div class="box" color="#b9ddeb" top="10" left="-710">
+          <p>Start</p>
+        </hover-div>
+        <hover-div class="box" color="#d3b9eb" top="10" left="110">
+          <p>Stop</p>
+        </hover-div>
+      </div>
+    </retro-board>
+  </body>
+  <script type="module">
+    const board = document.querySelector("retro-board");
+
+    // Center board
+    board.x = document.body.clientWidth / 2;
+    board.y = document.body.clientHeight / 2;
+  </script>
+</html>
