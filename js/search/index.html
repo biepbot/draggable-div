@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link href="index.css" rel="stylesheet" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+  </head>
+  <body>
+    <div id="search">
+      <input type="search" placeholder="Search ..." />
+      <div class="progressbar">
+        <span class="progress"></span>
+      </div>
+    </div>
+    <div id="results"></div>
+  </body>
+  <script type="module">
+    // Populate dataset (~105mln entries populatable)
+    import { firstNames } from "./resources/first_names.mjs";
+    import { lastNames } from "./resources/last_names.mjs";
+
+    self.data = [];
+    const desiredSetAmount = 50000;
+
+    // The maximum is exclusive and the minimum is inclusive
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    function getAny(dataSet) {
+      let index = getRandomInt(0, dataSet.length);
+      return dataSet[index];
+    }
+
+    while (self.data.length < desiredSetAmount) {
+      self.data.push(`${getAny(firstNames)} ${getAny(lastNames)}`);
+    }
+  </script>
+  <script type="module">
+    import { SearchHelper } from "./search_helper.mjs";
+    const searchContainer = document.getElementById("search");
+    const searchInput = searchContainer.querySelector("input");
+    const progress = searchContainer.querySelector(".progress");
+    const searchList = document.getElementById("results");
+
+    let searcher = new SearchHelper();
+    searcher.addEventListener("progress", function (evt) {
+      progress.style.width = `${evt.detail.progress}%`;
+      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+    });
+    searcher.addEventListener("start", function (evt) {
+      progress.style.width = "0%";
+      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+    });
+    searcher.addEventListener("end", function (evt) {
+      progress.style.width = "100%";
+      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+    });
+
+    async function search() {
+      // Update query
+      searcher.query = searchInput.value;
+
+      // Clear search list
+      searchList.innerHTML = "";
+
+      // Search values
+      let i = 0;
+      for await (const entry of searcher.findInValuesOf(self.data)) {
+        // Update entries on screen
+        i++;
+        let item = document.createElement("p");
+        item.innerText = entry;
+        item.setAttribute("entry", i);
+        searchList.appendChild(item);
+      }
+    }
+
+    window.addEventListener("load", () => {
+      self.data.sort();
+      search();
+    });
+    searchInput.addEventListener("input", search);
+  </script>
+</html>

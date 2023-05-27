@@ -1,0 +1,86 @@
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+}
+html {
+  height: 100vh;
+  background: #f7f7f7;
+}
+body {
+  max-width: 800px;
+  margin: auto;
+  background: #fff;
+  padding: 1rem;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+#search,
+#results {
+  padding: 1rem 0;
+}
+
+/* Search */
+#search {
+  border-bottom: 1px solid #eee;
+}
+#search input {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+/* Loader */
+.progressbar {
+  position: relative;
+  width: 100%;
+  margin: 0.5rem auto 0;
+  height: 2rem;
+  background: #fff;
+  overflow: hidden;
+  border: 1px solid #6f6f6f;
+  border-radius: 3px;
+}
+
+span.progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #78b4b4;
+  transition: width 0.1s;
+}
+
+span.progress:after {
+  content: attr(progress);
+  position: absolute;
+  left: 0.5rem;
+  width: 500px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c9193;
+  mix-blend-mode: multiply;
+}
+
+/* Result list */
+#results {
+  overflow-y: auto;
+  height: calc(100vh - 9rem);
+}
+#results p {
+  padding: 0.5rem;
+  position: relative;
+}
+#results p:after {
+  content: "# " attr(entry);
+  opacity: 0.3;
+  padding: 0.5rem;
+  position: absolute;
+  right: 0.5rem;
+}
+#results p:nth-child(odd) {
+  background: #f0f0f0;
+}
