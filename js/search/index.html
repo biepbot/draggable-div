@@ -18,12 +18,13 @@
     <div id="results"></div>
   </body>
   <script type="module">
+    // DATASET POPULATION SCRIPT
     // Populate dataset (~105mln entries populatable)
     import { firstNames } from "./resources/first_names.mjs";
     import { lastNames } from "./resources/last_names.mjs";
 
     self.data = [];
-    const desiredSetAmount = 50000;
+    const desiredSetAmount = 500000;
 
     // The maximum is exclusive and the minimum is inclusive
     function getRandomInt(min, max) {
@@ -41,37 +42,72 @@
       self.data.push(`${getAny(firstNames)} ${getAny(lastNames)}`);
     }
   </script>
-  <script type="module">
-    import { SearchHelper } from "./search_helper.mjs";
+  <script>
+    // ELEMENT SETUP SCRIPT
     const searchContainer = document.getElementById("search");
     const searchInput = searchContainer.querySelector("input");
     const progress = searchContainer.querySelector(".progress");
     const searchList = document.getElementById("results");
 
-    let searcher = new SearchHelper();
-    searcher.addEventListener("progress", function (evt) {
-      progress.style.width = `${evt.detail.progress}%`;
-      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+    const screenLimit = 25000;
+
+    window.addEventListener("load", () => {
+      self.data.sort();
+      screenSearcher.addEventListener("progress", function (evt) {
+        progress.style.width = `${evt.detail.progress}%`;
+        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+        addMore(evt);
+      });
+      screenSearcher.addEventListener("start", function (evt) {
+        progress.style.width = "0%";
+        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+      });
+      screenSearcher.addEventListener("end", function (evt) {
+        progress.style.width = "100%";
+        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
+        addMore(evt);
+      });
     });
-    searcher.addEventListener("start", function (evt) {
-      progress.style.width = "0%";
-      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
-    });
-    searcher.addEventListener("end", function (evt) {
-      progress.style.width = "100%";
-      progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
-    });
+
+    function addMore(evt) {
+      const hidden = evt.detail.results - screenLimit;
+      let item = searchList.querySelector(".more");
+      if (hidden > 0) {
+        if (!item) {
+          item = document.createElement("p");
+          item.classList.add("more");
+          searchList.appendChild(item);
+        }
+        item.innerText = `And ${hidden} more ...`;
+      }
+    }
+  </script>
+  <script type="module">
+    // SEARCH SETUP SCRIPT
+    import { SearchHelper } from "./search_helper.mjs";
+    const speed = 500;
+    self.screenSearcher = new SearchHelper(speed);
 
     async function search() {
       // Update query
-      searcher.query = searchInput.value;
+      screenSearcher.query = searchInput.value;
+      screenSearcher.limit = speed;
 
       // Clear search list
       searchList.innerHTML = "";
 
       // Search values
       let i = 0;
-      for await (const entry of searcher.findInValuesOf(self.data)) {
+      for await (const entry of screenSearcher.findInValuesOf(self.data)) {
+        // If already showing max entries, ignore
+        if (i >= screenLimit) {
+          // Set search to finish instantly
+          // 'return;' is also an option but the "end" event will not get triggered
+          // And we will not be able to know how many other results matched
+          screenSearcher.limit = Infinity;
+          continue;
+        }
+
         // Update entries on screen
         i++;
         let item = document.createElement("p");
@@ -82,7 +118,6 @@
     }
 
     window.addEventListener("load", () => {
-      self.data.sort();
       search();
     });
     searchInput.addEventListener("input", search);

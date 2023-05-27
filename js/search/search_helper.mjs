@@ -37,7 +37,7 @@ function createEvent(type, cur, max, results) {
       results,
       progress,
       humanReadable: () => {
-        return `Found ${results} in ${cur} entries (${progress.toFixed(1)}%)`;
+        return `Matched ${results} in ${cur} entries (${progress.toFixed(1)}%)`;
       },
     },
   });

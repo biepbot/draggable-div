@@ -74,7 +74,11 @@ span.progress:after {
   padding: 0.5rem;
   position: relative;
 }
-#results p:after {
+#results .more {
+  opacity: 0.5;
+  text-align: center;
+}
+#results p[entry]:after {
   content: "# " attr(entry);
   opacity: 0.3;
   padding: 0.5rem;
