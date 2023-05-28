@@ -46,31 +46,17 @@
     // ELEMENT SETUP SCRIPT
     const searchContainer = document.getElementById("search");
     const searchInput = searchContainer.querySelector("input");
-    const progress = searchContainer.querySelector(".progress");
+    const progressEle = searchContainer.querySelector(".progress");
     const searchList = document.getElementById("results");
 
     const screenLimit = 25000;
 
     window.addEventListener("load", () => {
       self.data.sort();
-      screenSearcher.addEventListener("progress", function (evt) {
-        progress.style.width = `${evt.detail.progress}%`;
-        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
-        addMore(evt);
-      });
-      screenSearcher.addEventListener("start", function (evt) {
-        progress.style.width = "0%";
-        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
-      });
-      screenSearcher.addEventListener("end", function (evt) {
-        progress.style.width = "100%";
-        progress.setAttribute("progress", `${evt.detail.humanReadable()}`);
-        addMore(evt);
-      });
     });
 
-    function addMore(evt) {
-      const hidden = evt.detail.results - screenLimit;
+    function addMore(results) {
+      const hidden = results - screenLimit;
       let item = searchList.querySelector(".more");
       if (hidden > 0) {
         if (!item) {
@@ -81,45 +67,86 @@
         item.innerText = `And ${hidden} more ...`;
       }
     }
+
+    let progressResolve = null;
+    function queueUpdateProgress(matches, processed, force = false) {
+      if (force) progressResolve = null;
+
+      // If already queued, ignore
+      if (progressResolve) return;
+
+      new Promise((r) => {
+        progressResolve = r;
+        requestAnimationFrame(() => {
+          const progress = (processed / self.data.length) * 100;
+          progressEle.style.width = `${progress}%`;
+          progressEle.setAttribute(
+            "progress",
+            `Matched ${matches} in ${processed} entries (${progress.toFixed(
+              1
+            )}%)`
+          );
+          addMore(matches);
+          r();
+          progressResolve = null;
+        });
+      });
+    }
   </script>
   <script type="module">
     // SEARCH SETUP SCRIPT
     import { SearchHelper } from "./search_helper.mjs";
     const speed = 500;
-    self.screenSearcher = new SearchHelper(speed);
+    self.screenSearcher = new SearchHelper({
+      matchSpeed: speed,
+      matchFrames: 5,
+    });
 
     async function search() {
       // Update query
       screenSearcher.query = searchInput.value;
-      screenSearcher.limit = speed;
 
       // Clear search list
       searchList.innerHTML = "";
 
       // Search values
-      let i = 0;
-      for await (const entry of screenSearcher.findInValuesOf(self.data)) {
+      let searchOptions = {
+        // For this demo we only display matches
+        // so we ignore the non match yields
+        ignoreNonMatch: true,
+      };
+      for await (const entry of screenSearcher.findInValuesOf(
+        self.data,
+        searchOptions
+      )) {
+        // Update progress
+        queueUpdateProgress(entry.matches, entry.processed, entry.done);
+
+        // If done, cleanup
+        if (entry.done) {
+          progressResolve();
+          break;
+        }
+
         // If already showing max entries, ignore
-        if (i >= screenLimit) {
-          // Set search to finish instantly
-          // 'return;' is also an option but the "end" event will not get triggered
-          // And we will not be able to know how many other results matched
-          screenSearcher.limit = Infinity;
+        if (entry.matches >= screenLimit) {
+          // Set search to finish
+          // 'break;' is also an option but we will not be able to know how many other results matched
+          searchOptions.ignoreMatch = true;
           continue;
         }
 
-        // Update entries on screen
-        i++;
-        let item = document.createElement("p");
-        item.innerText = entry;
-        item.setAttribute("entry", i);
-        searchList.appendChild(item);
+        if (entry.match) {
+          // Update entries on screen
+          let item = document.createElement("p");
+          item.innerText = entry.value;
+          item.setAttribute("entry", entry.matches);
+          searchList.appendChild(item);
+        }
       }
     }
 
-    window.addEventListener("load", () => {
-      search();
-    });
+    window.addEventListener("load", search);
     searchInput.addEventListener("input", search);
   </script>
 </html>
