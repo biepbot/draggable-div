@@ -70,6 +70,9 @@ span.progress:after {
   overflow-y: auto;
   height: calc(100vh - 9rem);
 }
+#results:empty:after {
+  content: "No results";
+}
 #results p {
   padding: 0.5rem;
   position: relative;
